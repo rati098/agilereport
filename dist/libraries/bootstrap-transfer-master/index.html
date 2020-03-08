@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Bootstrap Transfer Demo</title>
+
+	<link href="css/bootstrap.css" rel="stylesheet">
+	<link href="css/bootstrap-transfer.css" rel="stylesheet">
+  <style>
+
+  </style>
+  </head>
+
+  <body>
+
+
+  <ul class="tables">
+    <li tname = "t1">table 1</li>
+    <li tname = "t2">table 2</li>
+    <li tname = "t3">table 3</li>
+    <li tname = "t4">table 4</li>
+    <li tname = "t5">table 5</li>
+    <li tname = "t6">table 6</li>
+  </ul>
+  <div class="columns" style="width:400px"></div>
+
+	<script src="js/jquery.js"></script>
+    <script src="js/bootstrap-transfer.js"></script>
+
+    <script>
+    $(document).ready(function(){
+      function colShuttle(sid){
+        var t = $("#"+sid).bootstrapTransfer(
+  				{'target_id': sid+'columns',
+  				 'height': '15em',
+  				 'hilite_selection': true});
+
+  			t.populate([
+  				{value:"1", content:"Apple"},
+  				{value:"2", content:"Orange"},
+  				{value:"3", content:"Banana"},
+  				{value:"4", content:"Peach"},
+  				{value:"5", content:"Grapes"}
+  			]);
+      }
+
+      $('.tables li').click(function(){
+        var id = $(this).attr('tname');
+        $('.columns').append('<div id="'+id+'"></div>');
+        colShuttle(id);
+      });
+    });
+
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+{
+  "type" : "record",
+  "name" : "MIQ_CARNET_COUPONS_MASTER",
+  "doc" : "Sqoop import of MIQ.CARNET_COUPONS_MASTER",
+  "fields" : [ {
+    "name" : "CCM_ID",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "CCM_ID",
+    "sqlType" : "2"
+  }, {
+    "name" : "OEM_CODE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "OEM_CODE",
+    "sqlType" : "12"
+  }, {
+    "name" : "DLR_CODE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "DLR_CODE",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_MILEAGE_START_VAL",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "CCM_MILEAGE_START_VAL",
+    "sqlType" : "2"
+  }, {
+    "name" : "CCM_MILEAGE_END_VAL",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "CCM_MILEAGE_END_VAL",
+    "sqlType" : "2"
+  }, {
+    "name" : "CCM_LIST_ORDER",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_LIST_ORDER",
+    "sqlType" : "2"
+  }, {
+    "name" : "CCM_CATEGORY",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_CATEGORY",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_TOPIC",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_TOPIC",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_TYPE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_TYPE",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_OPT_IN_BODY",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_OPT_IN_BODY",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_OPT_OUT_BODY",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_OPT_OUT_BODY",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_DISCLAIMER",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_DISCLAIMER",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_CTA_COPY",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_CTA_COPY",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_CTA_LNK_WTH_DLR_CODE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_CTA_LNK_WTH_DLR_CODE",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_CTA_LNK_WO_DLR_CODE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_CTA_LNK_WO_DLR_CODE",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_GRAPHIC_NAME",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_GRAPHIC_NAME",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_COUPON_CODE",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_COUPON_CODE",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_USER_CREATED",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_USER_CREATED",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_DATE_CREATED",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnName" : "CCM_DATE_CREATED",
+    "sqlType" : "93"
+  }, {
+    "name" : "CCM_USER_MODIFIED",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "CCM_USER_MODIFIED",
+    "sqlType" : "12"
+  }, {
+    "name" : "CCM_DATE_MODIFIED",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnName" : "CCM_DATE_MODIFIED",
+    "sqlType" : "93"
+  } ],
+  "tableName" : "MIQ.CARNET_COUPONS_MASTER"
+}
