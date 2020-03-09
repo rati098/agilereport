@@ -566,8 +566,8 @@
             return blobData;
         },
         export: function (workbookObj, options) {
-            if(typeof(saveAs)=="undefined" && typeof(require)!="undefined")
-            var saveAs = require('saveAs');  
+            //rati if(typeof(saveAs)=="undefined" && typeof(require)!="undefined")
+            //rati var saveAs = require('saveAs');  
             saveAs(this.getBlob(workbookObj, options), this.config.fileFullName);
         },
       }
