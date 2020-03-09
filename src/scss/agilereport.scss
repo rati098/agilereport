@@ -38,6 +38,14 @@
 .agile_top_tools input {
     width: 33%;
 }
+.agile_down {
+    width: 30px;
+    height: 25px;
+    cursor: pointer;
+    float: right;
+    background: url(../image/down_img.png) no-repeat center center / 18px;
+    position: relative;
+}
 ul.agile_suggest {
     position: absolute;
     margin: 0;
