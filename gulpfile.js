@@ -36,7 +36,7 @@ function scripts() {
 			presets: [ '@babel/preset-env' ]
 		} ) )
 		.pipe( uglify() )
-		.pipe( concat( '.min.js' ) )
+		// .pipe( concat( '.min.js' ) )
 		.pipe( gulp.dest( paths.scripts.dest ) )
 		.pipe( browserSync.stream() );
 }
