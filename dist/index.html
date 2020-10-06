@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="cust_report">JSON2AgileReport</div>
+<div id="cust_report_2">JSON2AgileReport2</div>
 <script src="./js/FileSaver.js" async></script>
 <script src="./js/xlsx.core.min.js" async></script>
 <script src="./js/agilereport_browser.js"></script>
@@ -17,9 +18,28 @@
   let dtformatcols={'Date':'dd-mon-yyyy'};
   let numformatcols={'Number':{"decimals":1,number_prefix:"$"}};//number_suffix number_prefix
   let str="name1=value1,name2=value2,name3=value3";
-  $('#cust_report').agilereport({"data":data_json,"excel_parameter_tab":true,"excel_parameter_string":str,"csv_file_name":"agile_report.csv","csv_download":true,"excel_file_name":"agile_report.xlsx","excel_download":true,"dtformatcols":dtformatcols,"numformatcols":numformatcols,"sorting":true,"report_type":"pagination","no_of_rows":25,"div_class":"","halign":horrizontal_alignment,"table_header":"Table Header","callback":x});
-  function x(){
-    console.log("callback function x called !");
+  $('#cust_report').agilereport(
+    {
+    "data":data_json,
+    "excel_parameter_tab":true,
+    "excel_parameter_string":str,
+    "csv_file_name":"agile_report.csv",
+    "csv_download":true,
+    "excel_file_name":"agile_report.xlsx",
+    "excel_download":true,
+    "dtformatcols":dtformatcols,
+    "numformatcols":numformatcols,
+    "sorting":true,
+    "report_type":"pagination",
+    "no_of_rows":25,
+    "div_class":"",
+    "halign":horrizontal_alignment,
+    "table_header":"Table Header",
+    "callback":x
+  });
+  $('#cust_report_2').agilereport({"data":data_json,"excel_parameter_tab":false,"excel_parameter_string":str,"csv_file_name":"agile_report.csv","csv_download":true,"excel_file_name":"agile_report.xlsx","excel_download":true,"dtformatcols":dtformatcols,"numformatcols":numformatcols,"sorting":true,"report_type":"pagination","no_of_rows":10,"div_class":"","halign":horrizontal_alignment,"table_header":"Table Header","callback":x});
+  function x(obj){
+    console.log(obj.agile_data);
   }
 </script>
 </body>
