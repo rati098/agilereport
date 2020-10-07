@@ -59,7 +59,8 @@
     this.FilterReport(this._defaults, this.$element);
     this._defaults.callback(this);
     if (!this.Jhxlsx)
-      this.ExportExcel();
+      //this.ExportExcel();;
+      null;
   }
 
   Plugin.prototype.GenerateHeader = function (settings, element) {
@@ -98,7 +99,8 @@
       _.downloadCSV(settings)
     });
     $('#' + element.attr('id') + '_wrapper .agile_down .excel').click(function () {
-      _.downloadEXCEL(settings)
+      //_.downloadEXCEL(settings);
+      null;
     });
     if (settings.table_header)
       $('#' + element.attr('id') + '_wrapper').prepend(`<div class="theader">${settings.table_header}</div>`);
