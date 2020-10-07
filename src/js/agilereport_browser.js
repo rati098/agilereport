@@ -1,6 +1,6 @@
 (function ($, window, document, undefined) {
   // Create the defaults once
-  var pluginName = 'agilereport'; 
+  var pluginName = 'agilereport';
 
   // The actual plugin constructor
   function Plugin(element, options) {
@@ -24,7 +24,6 @@
       sorting: true,
       report_type: "lazy_load",
       callback: function (data) {
-
       }
     }, options);
     this._defaults = this.options;
@@ -248,18 +247,18 @@
   }//sort by key desc end; 
   Plugin.prototype.SetPagination = function (settings, element) {
     let _ = this;
-    let act_page = Math.ceil(this.controls.current_position / this.controls.paginationSize), i;
-    this.html = '<a href="javascript:void(0)" class="agile_prevset">&lt;&lt;</a><a href="javascript:void(0)" class="agile_prev">&lt;</a>';
-    for (i = 1; i <= Math.ceil(settings.data.length / this.controls.paginationSize); i++) {
+    let act_page = Math.ceil(_.controls.current_position / _.controls.paginationSize), i;
+    _.html = '<a href="javascript:void(0)" class="agile_prevset">&lt;&lt;</a><a href="javascript:void(0)" class="agile_prev">&lt;</a>';
+    for (i = 1; i <= Math.ceil(_.agile_data.length / _.controls.paginationSize); i++) {
       if (i == act_page)
-        this.html += `<a href="javascript:void(0)" class="active">${i}</a>`;
+        _.html += `<a href="javascript:void(0)" class="active">${i}</a>`;
       else if (i > 3)
-        this.html += `<a href="javascript:void(0)" class="agile_hide">${i}</a>`;
+        _.html += `<a href="javascript:void(0)" class="agile_hide">${i}</a>`;
       else
-        this.html += `<a href="javascript:void(0)">${i}</a>`;
+        _.html += `<a href="javascript:void(0)">${i}</a>`;
     }
-    this.html += '<a href="javascript:void(0)" class="agile_next">&gt;</a><a href="javascript:void(0)" class="agile_nextset">&gt;&gt;</a>';
-    $('#' + element.attr('id') + '_pagination').html(this.html);
+    _.html += '<a href="javascript:void(0)" class="agile_next">&gt;</a><a href="javascript:void(0)" class="agile_nextset">&gt;&gt;</a>';
+    $('#' + element.attr('id') + '_pagination').html(_.html);
     if (i <= 4)
       $('#' + element.attr('id') + '_pagination a.agile_prevset,#' + element.attr('id') + '_pagination a.agile_nextset').remove();
     if ($('#' + element.attr('id') + '_pagination a').length == 3)
@@ -315,7 +314,7 @@
       if ($('#' + element.attr('id') + '_pagination a.active').hasClass('agile_hide')) {
         pno = Number($('#' + element.attr('id') + '_pagination a:not([class*="agile_"])')[0].innerHTML);
       }
-      if (pno > Math.ceil(settings.data.length / _.controls.paginationSize))
+      if (pno > Math.ceil(_.agile_data.length / _.controls.paginationSize))
         return;
       $('#' + element.attr('id') + '_container').addClass('loading');
       _.controls.srow = ((pno - 1) * _.controls.paginationSize) + 1;
@@ -344,7 +343,7 @@
     $('#' + element.attr('id') + '_pagination a.agile_nextset').click(function () {
       let objarr = $('#' + element.attr('id') + '_pagination a:not([class*="agile_"])');
       let vpage = Number(objarr[objarr.length - 1].innerHTML);
-      if (!vpage || vpage == Math.ceil(settings.data.length / _.controls.paginationSize))
+      if (!vpage || vpage == Math.ceil(_.agile_data.length / _.controls.paginationSize))
         return;
       for (let i = 1; i <= 3; i++) {
         $('#' + element.attr('id') + '_pagination a').each(function () {
