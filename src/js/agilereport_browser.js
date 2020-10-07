@@ -726,7 +726,7 @@
       },
       export: function (workbookObj, options) {
         if (typeof (saveAs) == "undefined" && typeof (require) != "undefined")
-          var saveAs = require('saveAs');
+          var saveAs = require('file-saver');
         saveAs(this.getBlob(workbookObj, options), this.config.fileFullName);
       },
     }
