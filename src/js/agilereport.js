@@ -24,7 +24,6 @@
       sorting: true,
       report_type: "lazy_load",
       callback: function (data) {
-
       }
     }, options);
     this._defaults = this.options;

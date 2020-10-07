@@ -1,6 +1,6 @@
 (function ($, window, document, undefined) {
   // Create the defaults once
-  var pluginName = 'agilereport';
+  var pluginName = 'agilereport'; 
 
   // The actual plugin constructor
   function Plugin(element, options) {
