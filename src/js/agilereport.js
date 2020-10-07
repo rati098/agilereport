@@ -1,107 +1,78 @@
-"use strict";
-(function ($) {
-  let agile_data = [],
-    tmp,
-    settings,
-    header_arr = [],
-    html = "",
-    rec_control = { "psize": 0, "srow": "", "erow": "", "curr_pos": "" },
-    Jhxlsx = "";
-  const mth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const fmth = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "Octomber", "November", "December"];
-  $.fn.agilereport = function (options) {
+(function ($, window, document, undefined) {
+  // Create the defaults once
+  var pluginName = 'agilereport';
+
+  // The actual plugin constructor
+  function Plugin(element, options) {
+    this.element = element;
+    this.$element = $(element);
+    this.SortMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    this.FullMonth = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "Octomber", "November", "December"];
+    this.options = $.extend({
+      // These are the defaults.
+      div_class: "",
+      halign: "",
+      no_of_rows: 15,
+      dtformatcols: {},
+      csv_download: true,
+      csv_file_name: "data.csv",
+      excel_download: true,
+      excel_file_name: "data.xlsx",
+      excel_parameter_tab: false,
+      excel_parameter_string: "",
+      numformatcols: {},
+      sorting: true,
+      report_type: "lazy_load",
+      callback: function (data) {
+
+      }
+    }, options);
+    this._defaults = this.options;
+    this._name = pluginName;
+    this.header_arr = [];
+    this.html = '';
+    this.temp = '';
+    this.controls = {
+      paginationSize: 0,
+      srow: "",
+      erow: "",
+      current_position: ""
+    }
+    this.Jhxlsx = "";
     if (options == 'destroy') {
-      destroy.call(this);
+      this.destroy(this._defaults, this.$element)
       return;
     }
-    let p_halign = [];
+    this.p_halign = [];
     if (!options.data || options.data.length == 0) {
       this.html("No Data Found !").addClass('agile_no_data');
       return;
     }
     for (let i in options.data[0]) {
-      header_arr.push(i);
-      p_halign.push('left');
+      this.header_arr.push(i);
+      this.p_halign.push('left');
     }
-    // This is the easiest way to have default options.
-    settings = $.extend({
-      // These are the defaults.
-      "div_class": "",
-      "halign": p_halign,
-      "no_of_rows": 15,
-      "dtformatcols": {},
-      "csv_download": true,
-      "csv_file_name": "data.csv",
-      "excel_download": true,
-      "excel_file_name": "data.xlsx",
-      "excel_parameter_tab": false,
-      "excel_parameter_string": "",
-      "numformatcols": {},
-      "sorting": true,
-      "report_type": "lazy_load",
-      callback: function () {
-        //console.log('callback not defined:' + this.innerHTML);
-      }
-    }, options);
-    rec_control.psize = Number(settings.no_of_rows);
-    create_header.call(this);
-    agile_data = settings.data;
-    gen_report.call(this);
-    filter_data_event.call(this);
-    $('.json2agilereport').parent('div').css({
-      "width": $('.json2agilereport').css('width'),
-      "margin": "0 auto"
-    });
-    $('.json2agilereport table').css('width', $('.json2agilereport table').css('width'));
-    settings.callback.call(this);
+    this._defaults.halign = this.p_halign;
+    this.agile_data = this._defaults.data;
+    this.controls.paginationSize = Number(this._defaults.no_of_rows);
+    this.GenerateHeader(this._defaults, this.$element);
+    this.GenerateBody(this._defaults, this.$element);
+    this.FilterReport(this._defaults, this.$element);
+    this._defaults.callback(this);
+    if (!this.Jhxlsx)
+      this.ExportExcel();
+  }
 
-    if (!Jhxlsx)
-      reate_jhxlsx_obj();
-    return this;
-  };//json2agilereport
-  /**************Build Report*********************/
-  function gen_report(e) {
-    if (settings.report_type == "lazy_load" || settings.report_type == "pagination") {
-      rec_control.srow = 1;
-      rec_control.erow = rec_control.psize;
-    } else {
-      rec_control.srow = 1;
-      rec_control.erow = agile_data.length;
-    }
-    console.log('Anuj'+e)
-    append_rows.call(this);
-    if (settings.report_type == "pagination") {
-      $('.agile_wrapper').append(`<div class="agile_bottom_tools"><input type="text" value="${rec_control.psize}"><span> rows per page</span><div class="pagination"></div></div>`);
-      set_pagination();
-      $('.agile_bottom_tools input').change(function () {
-        rec_control.psize = Number($(this).val());
-        agile_data = settings.data;
-        rec_control.srow = 1;
-        rec_control.erow = rec_control.psize;
-        $('.json2agilereport tbody').html('');
-        append_rows.call(this);
-        set_pagination();
-        settings.callback.call(this);
-      });
-    } else if (settings.report_type == "lazy_load") {
-      $('.json2agilereport').scrollTop(0).scroll(function (event) {
-        var self = $(this);
-        var lTbl = self.children("table");
-        if (self.scrollTop() >= lTbl.height() - self.height()) {
-          rec_control.srow = rec_control.curr_pos + 1;
-          rec_control.erow = rec_control.curr_pos + rec_control.psize;
-          append_rows.call(this);
-          settings.callback.call(this);
-        }
-      });
-    }//lazy_load
-  }//gen_report
-  /**************Build Report*********************/
-  function create_header() {
-    this.html(`<div class="agile_wrapper">
-                <div class="agile_top_tools"><input type="search" placeholder="Search"><ul class="agile_suggest"></ul><div class="agile_down"><ul>${settings.csv_download ? '<li class="csv">Download CSV</li>' : ''}${settings.excel_download ? '<li class="excel">Download Excel</li>' : ''}</ul></div></div>
-                <div class="json2agilereport ${settings.div_class}">
-                <table>
+  Plugin.prototype.GenerateHeader = function (settings, element) {
+    // Place Header related logic here
+    let _ = this;
+    element.html(`<div id="${element.attr('id') + '_wrapper'}" class="agile_wrapper">
+                <div id="${element.attr('id') + '_container'}" class="agile_top_tools">
+                <input id="${element.attr('id') + '_input'}" type="search" placeholder="Search" />
+                <ul class="agile_suggest"></ul><div class="agile_down">
+                <ul>${settings.csv_download ? '<li class="csv">Download CSV</li>' : ''}${settings.excel_download ? '<li class="excel">Download Excel</li>' : ''}</ul></div></div>
+                <div id="${element.attr('id') + '_report'}" class="json2agilereport ${settings.div_class}">
+                <table class="report_table">
                   <thead>
                     <tr class=${settings.sorting ? '"agile_sort"' : '""'}></tr>
                   </thead>
@@ -111,88 +82,348 @@
                 </div>
                 </div>
                 `);
+    $('#' + element.attr('id') + '_wrapper,#' + element.attr('id') + '_report .report_table,#' + element.attr('id') + '_report').css({
+      "width": '100%',
+      "margin": "0 auto"
+    });
+    $('#' + element.attr('id') + '_report').scroll(function () {
+      $('#' + element.attr('id') + '_report .agile_sort th').css({
+        'position': 'relative',
+        'top': $(this).scrollTop(),
+        'background': '#fff'
+      })
+    })
     if (!settings.csv_download && !settings.excel_download)
-      $('.agile_down').remove();
-    $('.agile_down .csv').click(function () {
-      down_csv();
+      $('#' + element.attr('id') + '_wrapper .agile_down').remove();
+    $('#' + element.attr('id') + '_wrapper .agile_down .csv').click(function () {
+      _.downloadCSV(settings)
     });
-    $('.agile_down .excel').click(function () {
-      json2excel();
+    $('#' + element.attr('id') + '_wrapper .agile_down .excel').click(function () {
+      _.downloadEXCEL(settings)
     });
-    if ( settings.table_header ) 
-      $('.agile_wrapper').prepend(`<div class="theader">${settings.table_header}</div>`);
-    header_arr.forEach(function (a, i) {
-      $('.json2agilereport thead tr').append(`<th align="${settings.halign[i]}" data-key="${a}">${a}</th>`) 
+    if (settings.table_header)
+      $('#' + element.attr('id') + '_wrapper').prepend(`<div class="theader">${settings.table_header}</div>`);
+    _.header_arr.forEach(function (a, i) {
+      $('#' + element.attr('id') + '_report thead tr').append(`<th align="${settings.halign[i]}" data-key="${a}">${a}</th>`)
     });
-    if ( settings.sorting )
-      enable_sort();
-  }//create_header
-  function append_rows() {
-    if ( agile_data.length < rec_control.srow )
+    if (settings.sorting)
+      _.EnableSorting(settings, element);
+  }//Generate Header END;
+  Plugin.prototype.GenerateBody = function (settings, element) {
+    let _ = this;
+    // Place Body related logic here
+    if (settings.report_type == "lazy_load" || settings.report_type == "pagination") {
+      this.controls.srow = 1;
+      this.controls.erow = this.controls.paginationSize;
+    } else {
+      this.controls.srow = 1;
+      this.controls.erow = this.agile_data.length;
+    }
+    this.AppendRows(settings, element)
+    if (settings.report_type == "pagination") {
+      $('#' + element.attr('id') + '_wrapper').append(`<div class="agile_bottom_tools">
+      <input type="text" id="${element.attr('id') + '_limit'}" value="${this.controls.paginationSize}"><span> rows per page</span>
+      <div class="pagination" id="${element.attr('id') + '_pagination'}"></div></div>`);
+      this.SetPagination(settings, element)
+      $('#' + element.attr('id') + '_limit').change(function () {
+        _.controls.paginationSize = Number($(this).val());
+        _.agile_data = settings.data;
+        _.controls.srow = 1;
+        _.controls.erow = _.controls.paginationSize
+        $('#' + element.attr('id') + '_report tbody').html('');
+        _.AppendRows(settings, element)
+        _.SetPagination(settings, element)
+        settings.callback(_);
+      });
+    } else if (settings.report_type == "lazy_load") {
+      $('#' + element.attr('id') + '_report').scrollTop(0).scroll(function (event) {
+        var self = $(this);
+        var lTbl = self.children("table");
+        if (self.scrollTop() >= lTbl.height() - self.height()) {
+          this.controls.srow = this.controls.current_position + 1;
+          this.controls.erow = this.controls.current_position + this.controls.paginationSize;
+          this.AppendRows(settings, element)
+          settings.callback(_);
+        }
+      });
+    }//lazy_load
+  };//Generate body END;
+  Plugin.prototype.AppendRows = function (settings, element) {
+    // Place append rows related logic here
+    let _ = this;
+    if (this.agile_data.length < this.controls.srow)
       return;
-    rec_control.erow = (agile_data.length < rec_control.erow) ? agile_data.length : rec_control.erow;
+    this.controls.erow = (this.agile_data.length < this.controls.erow) ? this.agile_data.length : this.controls.erow;
     //prepare tbody  
-    for (let j = ( rec_control.srow - 1); j < rec_control.erow; j++) {
-      tmp = agile_data[j];
-      html = "<tr>";
-      header_arr.forEach(function (val, i) {
-        html += `<td align="${settings.halign[i]}">${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? format_date(new Date(tmp[val]), settings.dtformatcols[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? format_number(tmp[val], settings.numformatcols[val]) : tmp[val])}</td>`;
+    for (let j = (this.controls.srow - 1); j < this.controls.erow; j++) {
+      this.temp = this.agile_data[j];
+      this.html = "<tr>";
+      this.header_arr.forEach(function (val, i) {
+        _.html += `<td align="${settings.halign[i]}">
+        ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
       });//inner loop
-      html += "</tr>";
-      $('.json2agilereport tbody').append(html);
+      this.html += "</tr>";
+      $('#' + element.attr('id') + '_report tbody').append(this.html);
     };//outer loop
-    rec_control.curr_pos = rec_control.erow;
-  }//append_rows
-  function filter_data_event() {
-    $('.agile_top_tools input[type="search"]').bind("change paste keyup", function () {
-      $('.agile_top_tools').addClass('loading');
-      $('tr.agile_sort th').removeClass('asc').removeClass('desc');
+    this.controls.current_position = this.controls.erow;
+
+  };//Append Rows END;
+  Plugin.prototype.FormatNumber = function (value, format) {
+    if (value) {
+      if (format.decimals)
+        value = value.toFixed(format.decimals).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      if (format.number_prefix && Number(value.replace(/\,/g, '')) < 0)
+        value = '<span class="negative">(' + format.number_prefix + value.replace(/\-/, '') + ')</span>';
+      else if (format.number_prefix)
+        value = format.number_prefix + value;
+      else if (format.number_suffix && Number(value.replace(/\,/g, '')) < 0)
+        value = '<span class="negative">(' + value.replace(/\-/, '') + format.number_suffix + ')</span>';
+      else if (format.number_suffix)
+        value = value + format.number_suffix;
+    }
+    return value;
+  }//Format Number END;
+  Plugin.prototype.FormatDate = function (date, format) {
+    if (format == 'dd-mm-yyyy')
+      return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+    else if (format == 'dd/mm/yyyy')
+      return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+    else if (format == 'mm-dd-yyyy')
+      return (date.getMonth() + 1) + "-" + date.getDate() + "-" + date.getFullYear();
+    else if (format == 'mm/dd/yyyy')
+      return (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+    else if (format == 'dd/mon/yyyy')
+      return date.getDate() + "/" + this.SortMonth[date.getMonth()] + "/" + date.getFullYear();
+    else if (format == 'dd-mon-yyyy')
+      return date.getDate() + "-" + this.SortMonth[date.getMonth()] + "-" + date.getFullYear();
+    else if (format == 'dd mon yyyy')
+      return date.getDate() + " " + this.SortMonth[date.getMonth()] + " " + date.getFullYear();
+    else if (format == 'dd month yyyy')
+      return date.getDate() + " " + this.FullMonth[date.getMonth()] + " " + date.getFullYear();
+    else if (format == 'month dd,yyyy')
+      return this.FullMonth[date.getMonth()] + " " + date.getDate() + "," + date.getFullYear();
+    else
+      return this.SortMonth[date.getMonth()] + "_" + date.getDate() + "_" + date.getFullYear();
+  }//Format Date END;
+  Plugin.prototype.EnableSorting = function (settings, element) {
+    let _ = this;
+    $('#' + element.attr('id') + '_report th').click(function () {
+      $('#' + element.attr('id') + '_container').addClass('loading');
+      let key_name = $(this).data('key');
+      if ($(this).hasClass('asc')) {
+        $('#' + element.attr('id') + '_report th').removeClass('asc').removeClass('desc');
+        _.SortByKeyDesc(settings.data, key_name);
+        $(this).addClass('desc');
+      } else {
+        $('#' + element.attr('id') + '_report th').removeClass('asc').removeClass('desc');
+        _.SortByKey(settings.data, key_name);
+        $(this).addClass('asc');
+      }
+      $('#' + element.attr('id') + '_report tbody').html('');
+
+      if (settings.report_type == "lazy_load" || settings.report_type == "pagination") {
+        _.controls.srow = 1;
+        _.controls.erow = _.controls.paginationSize;
+      } else {
+        _.controls.srow = 1;
+        _.controls.erow = settings.data.length;
+      }
+      _.AppendRows(settings, element)
+      _.SetPagination(settings, element)
+      $('#' + element.attr('id') + '_container').removeClass('loading');
+      settings.callback.call(this);
+    });
+  }//Enable Sorting END;
+  Plugin.prototype.SortByKey = function (array, key) {
+    return array.sort(function (a, b) {
+      var x = a[key]; var y = b[key];
+      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+  }//sort by key end;
+  Plugin.prototype.SortByKeyDesc = function (array, key) {
+    return array.sort(function (a, b) {
+      var x = a[key]; var y = b[key];
+      return ((x > y) ? -1 : ((x < y) ? 1 : 0));
+    });
+  }//sort by key desc end; 
+  Plugin.prototype.SetPagination = function (settings, element) {
+    let _ = this;
+    let act_page = Math.ceil(this.controls.current_position / this.controls.paginationSize), i;
+    this.html = '<a href="javascript:void(0)" class="agile_prevset">&lt;&lt;</a><a href="javascript:void(0)" class="agile_prev">&lt;</a>';
+    for (i = 1; i <= Math.ceil(settings.data.length / this.controls.paginationSize); i++) {
+      if (i == act_page)
+        this.html += `<a href="javascript:void(0)" class="active">${i}</a>`;
+      else if (i > 3)
+        this.html += `<a href="javascript:void(0)" class="agile_hide">${i}</a>`;
+      else
+        this.html += `<a href="javascript:void(0)">${i}</a>`;
+    }
+    this.html += '<a href="javascript:void(0)" class="agile_next">&gt;</a><a href="javascript:void(0)" class="agile_nextset">&gt;&gt;</a>';
+    $('#' + element.attr('id') + '_pagination').html(this.html);
+    if (i <= 4)
+      $('#' + element.attr('id') + '_pagination a.agile_prevset,#' + element.attr('id') + '_pagination a.agile_nextset').remove();
+    if ($('#' + element.attr('id') + '_pagination a').length == 3)
+      $('#' + element.attr('id') + '_pagination a.agile_prev, #' + element.attr('id') + '_pagination a.agile_next').remove();
+    $('#' + element.attr('id') + '_pagination a').click(function () {
+      if ($(this).hasClass('agile_prev') || $(this).hasClass('agile_next') || $(this).hasClass('agile_nextset') || $(this).hasClass('agile_prevset'))
+        return;
+      let pno = $(this).text();
+      $('#' + element.attr('id') + '_container').addClass('loading');
+      _.controls.srow = ((pno - 1) * _.controls.paginationSize) + 1;
+      _.controls.erow = _.controls.srow + _.controls.paginationSize - 1;
+      $('#' + element.attr('id') + '_report tbody').html('');
+      _.AppendRows(settings, element)
+      $('#' + element.attr('id') + '_pagination a.active').removeClass('active');
+      $(this).addClass('active');
+      $('#' + element.attr('id') + '_container').removeClass('loading');
+      settings.callback(_);
+    });
+    $('#' + element.attr('id') + '_pagination a.agile_prev').click(function () {
+      let pno = Number($('#' + element.attr('id') + '_pagination a.active').text()) - 1;
+      if ($('#' + element.attr('id') + '_pagination a.active').hasClass('agile_hide')) {
+        pno = Number($('#' + element.attr('id') + '_pagination a:not([class*="agile_"])')[0].innerHTML);
+      }
+      if (pno == 0)
+        return;
+      $('#' + element.attr('id') + '_container').addClass('loading');
+      _.controls.srow = ((pno - 1) * _.controls.paginationSize) + 1;
+      _.controls.erow = _.controls.srow + _.controls.paginationSize - 1;
+      $('#' + element.attr('id') + '_report tbody').html('');
+      _.AppendRows(settings, element);
+
+      if ($('#' + element.attr('id') + '_pagination a.active').hasClass('agile_hide')) {
+        $('#' + element.attr('id') + '_pagination a.active:eq(0)').removeClass('active');
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == pno)
+            $(this).addClass('active');
+        });
+      } else {
+        $('#' + element.attr('id') + '_pagination a.active').prev().addClass('active');
+        $('#' + element.attr('id') + '_pagination a.active:eq(1)').removeClass('active');
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == pno && $(this).hasClass('agile_hide')) {
+            $(this).removeClass('agile_hide');
+            $(this).next().next().next().addClass('agile_hide');
+          }
+        });
+      }
+      $('#' + element.attr('id') + '_container').removeClass('loading');
+      settings.callback(_);
+    });
+    $('#' + element.attr('id') + '_pagination a.agile_next').click(function () {
+      let pno = Number($('#' + element.attr('id') + '_pagination a.active').text()) + 1;
+      if ($('#' + element.attr('id') + '_pagination a.active').hasClass('agile_hide')) {
+        pno = Number($('#' + element.attr('id') + '_pagination a:not([class*="agile_"])')[0].innerHTML);
+      }
+      if (pno > Math.ceil(settings.data.length / _.controls.paginationSize))
+        return;
+      $('#' + element.attr('id') + '_container').addClass('loading');
+      _.controls.srow = ((pno - 1) * _.controls.paginationSize) + 1;
+      _.controls.erow = _.controls.srow + _.controls.paginationSize - 1;
+      $('#' + element.attr('id') + '_report tbody').html('');
+      _.AppendRows(settings, element);
+      if ($('#' + element.attr('id') + '_pagination a.active').hasClass('agile_hide')) {
+        $('#' + element.attr('id') + '_pagination a.active:eq(0)').removeClass('active');
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == pno)
+            $(this).addClass('active');
+        });
+      } else {
+        $('#' + element.attr('id') + '_pagination a.active').next().addClass('active');
+        $('#' + element.attr('id') + '_pagination a.active:eq(0)').removeClass('active');
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == pno && $(this).hasClass('agile_hide')) {
+            $(this).removeClass('agile_hide');
+            $(this).prev().prev().prev().addClass('agile_hide');
+          }
+        });
+      }
+      $('#' + element.attr('id') + '_container').removeClass('loading');
+      settings.callback(_);
+    });
+    $('#' + element.attr('id') + '_pagination a.agile_nextset').click(function () {
+      let objarr = $('#' + element.attr('id') + '_pagination a:not([class*="agile_"])');
+      let vpage = Number(objarr[objarr.length - 1].innerHTML);
+      if (!vpage || vpage == Math.ceil(settings.data.length / _.controls.paginationSize))
+        return;
+      for (let i = 1; i <= 3; i++) {
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == (vpage + i) && $(this).hasClass('agile_hide')) {
+            $(this).removeClass('agile_hide');
+            $(objarr[i - 1]).addClass('agile_hide');
+          }
+        });
+      }
+      settings.callback(_);
+    });
+    $('#' + element.attr('id') + '_pagination a.agile_prevset').click(function () {
+      let objarr = $('#' + element.attr('id') + '_pagination a:not([class*="agile_"])');
+      let vpage = Number(objarr[0].innerHTML);
+      if (!vpage || vpage == 1)
+        return;
+      for (let i = 1; i <= 3; i++) {
+        $('#' + element.attr('id') + '_pagination a').each(function () {
+          if ($(this).text() == (vpage - i) && $(this).hasClass('agile_hide')) {
+            $(this).removeClass('agile_hide');
+            $(objarr[objarr.length - i]).addClass('agile_hide');
+          }
+        });
+      }
+      settings.callback(_);
+    });
+  }//Set Pagination END;
+  Plugin.prototype.FilterReport = function (settings, element) {
+    let _ = this;
+    $('#' + element.attr('id') + '_input').bind("change paste keyup", function () {
+      $('#' + element.attr('id') + '_container').addClass('loading');
+      $('#' + element.attr('id') + '_report thead th').removeClass('asc').removeClass('desc');
     });
     // detect the change
-    $('.agile_top_tools input[type="search"]').bind("change paste keyup", delay(function (e) {
+    $('#' + element.attr('id') + '_input').bind("change paste keyup", delay(function (e) {
       let fval = $(this).val().toUpperCase();
-      html = "";
-      agile_data = [];
+      _.html = "";
+      _.agile_data = [];
       if (fval.length > 0) {
         settings.data.forEach(function (val, i) {
-          header_arr.forEach(function (ival, j) {
-            tmp = val[ival];
-            if (tmp.toString().toUpperCase().indexOf(fval) > -1) {
-              agile_data.push(settings.data[i]);
-              if (html.indexOf(val[ival]) == -1) {
-                html = html + `<li>${val[ival]}</li>`;
+          _.header_arr.forEach(function (ival, j) {
+            _.temp = val[ival];
+            if (_.temp.toString().toUpperCase().indexOf(fval) > -1) {
+              _.agile_data.push(settings.data[i]);
+              if (_.html.indexOf(val[ival]) == -1) {
+                _.html = _.html + `<li>${val[ival]}</li>`;
               }
             }
           });//inner loop
         });//outer loop
-        $('ul.agile_suggest').html(html);
-        if ($('.agile_top_tools input[type="search"]').is(":focus"))
-          $('ul.agile_suggest').show();
-        $('ul.agile_suggest li').click(function () {
-          $('.agile_top_tools input').val($(this).text());
+        $('#' + element.attr('id') + '_container ul.agile_suggest').html(_.html);
+        if ($('#' + element.attr('id') + '_input').is(":focus"))
+          $('#' + element.attr('id') + '_container ul.agile_suggest').show();
+        $('#' + element.attr('id') + '_container ul.agile_suggest li').click(function () {
+          $('#' + element.attr('id') + '_input').val($(this).text());
         })
       } else {
-        agile_data = settings.data;
+        _.agile_data = settings.data;
       }
-      rec_control.srow = 1; rec_control.erow = rec_control.psize;
-      $('.json2agilereport tbody').html('');
-      append_rows.call(this);
-      set_pagination();
-      if (settings.report_type == "pagination" && agile_data.length == 0) {
-        $('.agile_bottom_tools').hide();
+      _.controls.srow = 1;
+      _.controls.erow = _.controls.paginationSize;
+      $('#' + element.attr('id') + '_report tbody').html('');
+      _.AppendRows(settings, element)
+      _.SetPagination(settings, element)
+      if (settings.report_type == "pagination" && _.agile_data.length == 0) {
+        $('#' + element.attr('id') + '_wrapper .agile_bottom_tools').hide();
       } else {
-        $('.agile_bottom_tools').show();
+        $('#' + element.attr('id') + '_wrapper .agile_bottom_tools').show();
       }
-      if (agile_data.length == 0) {
-        $('.json2agilereport tbody').append(`<tr><td align="center" colspan="${header_arr.length}" style="font-size: 11px;color: #d40e0e;font-weight: bold;">No Matching Record !</td></tr>`);
+      if (_.agile_data.length == 0) {
+        $('#' + element.attr('id') + '_report tbody').append(`<tr><td align="center" colspan="${_.header_arr.length}" style="font-size: 11px;color: #d40e0e;font-weight: bold;">No Matching Record !</td></tr>`);
       }
-      $('.agile_top_tools').removeClass('loading');
-      settings.callback.call(this);
+      $('#' + element.attr('id') + '_container').removeClass('loading');
+      settings.callback(_);
     }, 700));
     $(document).mouseup(function () {
-      $('.agile_suggest').hide();
+      $('#' + element.attr('id') + '_container ul.agile_suggest').hide();
     });
-  }//filter_data_event
+  }//Filter Report END;
   function delay(callback, ms) {
     var timer = 0;
     return function () {
@@ -202,157 +433,65 @@
         callback.apply(context, args);
       }, ms || 0);
     };
-  }//delay
-  function set_pagination() {
-    let act_page = Math.ceil(rec_control.curr_pos / rec_control.psize), i;
-    html = '<a href="javascript:void(0)" class="agile_prevset">&lt;&lt;</a><a href="javascript:void(0)" class="agile_prev">&lt;</a>';
-    for (i = 1; i <= Math.ceil(agile_data.length / rec_control.psize); i++) {
-      if (i == act_page) html += `<a href="javascript:void(0)" class="active">${i}</a>`;
-      else if (i > 3) html += `<a href="javascript:void(0)" class="agile_hide">${i}</a>`;
-      else html += `<a href="javascript:void(0)">${i}</a>`;
+  }//delay END;
+  Plugin.prototype.destroy = function (settings, element) {
+    this.header_arr = [];
+    this.html = '';
+    this.temp = '';
+    this.controls = {
+      paginationSize: 0,
+      srow: "",
+      erow: "",
+      current_position: ""
     }
-    html += '<a href="javascript:void(0)" class="agile_next">&gt;</a><a href="javascript:void(0)" class="agile_nextset">&gt;&gt;</a>';
-    $('.pagination').html(html);
-    if (i <= 4) $('a.agile_prevset,a.agile_nextset').remove();
-    if ($('.agile_bottom_tools .pagination a').length == 3) $('a.agile_prev,a.agile_next').remove();
-    $('.pagination a').click(function () {
-      if ($(this).hasClass('agile_prev') || $(this).hasClass('agile_next') || $(this).hasClass('agile_nextset') || $(this).hasClass('agile_prevset')) return;
-      let pno = $(this).text();
-      $('.agile_top_tools').addClass('loading');
-      rec_control.srow = ((pno - 1) * rec_control.psize) + 1;
-      rec_control.erow = rec_control.srow + rec_control.psize - 1;
-      $('.json2agilereport tbody').html('');
-      append_rows.call(this);
-      $('.pagination a.active').removeClass('active');
-      $(this).addClass('active');
-      $('.agile_top_tools').removeClass('loading');
-      settings.callback.call(this);
-    });
-    $('.pagination a.agile_prev').click(function () {
-      let pno = Number($('.pagination a.active').text()) - 1;
-      if ($('.pagination a.active').hasClass('agile_hide')) {
-        pno = Number($('.pagination a:not([class*="agile_"])')[0].innerHTML);
-      }
-      if (pno == 0) return;
-      $('.agile_top_tools').addClass('loading');
-      rec_control.srow = ((pno - 1) * rec_control.psize) + 1;
-      rec_control.erow = rec_control.srow + rec_control.psize - 1;
-      $('.json2agilereport tbody').html('');
-      append_rows.call(this);
-      if ($('.pagination a.active').hasClass('agile_hide')) {
-        $('.pagination a.active:eq(0)').removeClass('active');
-        $('.pagination a').each(function () {
-          if ($(this).text() == pno) $(this).addClass('active');
-        });
-      } else {
-        $('.pagination a.active').prev().addClass('active');
-        $('.pagination a.active:eq(1)').removeClass('active');
-        $('.pagination a').each(function () {
-          if ($(this).text() == pno && $(this).hasClass('agile_hide')) {
-            $(this).removeClass('agile_hide');
-            $(this).next().next().next().addClass('agile_hide');
-          }
-        });
-      }
-      $('.agile_top_tools').removeClass('loading');
-      settings.callback.call(this);
-    });
-    $('.pagination a.agile_next').click(function () {
-      let pno = Number($('.pagination a.active').text()) + 1;
-      if ($('.pagination a.active').hasClass('agile_hide')) {
-        pno = Number($('.pagination a:not([class*="agile_"])')[0].innerHTML);
-      }
-      if (pno > Math.ceil(agile_data.length / rec_control.psize)) return;
-      $('.agile_top_tools').addClass('loading');
-      rec_control.srow = ((pno - 1) * rec_control.psize) + 1;
-      rec_control.erow = rec_control.srow + rec_control.psize - 1;
-      $('.json2agilereport tbody').html('');
-      append_rows.call(this);
-      if ($('.pagination a.active').hasClass('agile_hide')) {
-        $('.pagination a.active:eq(0)').removeClass('active');
-        $('.pagination a').each(function () {
-          if ($(this).text() == pno) $(this).addClass('active');
-        });
-      } else {
-        $('.pagination a.active').next().addClass('active');
-        $('.pagination a.active:eq(0)').removeClass('active');
-        $('.pagination a').each(function () {
-          if ($(this).text() == pno && $(this).hasClass('agile_hide')) {
-            $(this).removeClass('agile_hide');
-            $(this).prev().prev().prev().addClass('agile_hide');
-          }
-        });
-      }
-      $('.agile_top_tools').removeClass('loading');
-      settings.callback.call(this);
-    });
-    $('.pagination a.agile_nextset').click(function () {
-      let objarr = $('.pagination a:not([class*="agile_"])');
-      let vpage = Number(objarr[objarr.length - 1].innerHTML);
-      if (!vpage || vpage == Math.ceil(agile_data.length / rec_control.psize)) return;
-      for (let i = 1; i <= 3; i++) {
-        $('.pagination a').each(function () {
-          if ($(this).text() == (vpage + i) && $(this).hasClass('agile_hide')) {
-            $(this).removeClass('agile_hide');
-            $(objarr[i - 1]).addClass('agile_hide');
-          }
-        });
-      }
-      settings.callback.call(this);
-    });
-    $('.pagination a.agile_prevset').click(function () {
-      let objarr = $('.pagination a:not([class*="agile_"])');
-      let vpage = Number(objarr[0].innerHTML);
-      if (!vpage || vpage == 1) return;
-      for (let i = 1; i <= 3; i++) {
-        $('.pagination a').each(function () {
-          if ($(this).text() == (vpage - i) && $(this).hasClass('agile_hide')) {
-            $(this).removeClass('agile_hide');
-            $(objarr[objarr.length - i]).addClass('agile_hide');
-          }
-        });
-      }
-      settings.callback.call(this);
-    });
-  }//set_pagination
-  function enable_sort() {
-    $('tr.agile_sort th').click(function () {
-      $('.agile_top_tools').addClass('loading');
-      let key_name = $(this).data('key');
-      if ($(this).hasClass('asc')) {
-        $('tr.agile_sort th').removeClass('asc').removeClass('desc');
-        sort_by_key_desc(agile_data, key_name);
-        $(this).addClass('desc');
-      } else {
-        $('tr.agile_sort th').removeClass('asc').removeClass('desc');
-        sort_by_key(agile_data, key_name);
-        $(this).addClass('asc');
-      }
-      $('.json2agilereport tbody').html('');
-      if (settings.report_type == "lazy_load" || settings.report_type == "pagination") {
-        rec_control.srow = 1; rec_control.erow = rec_control.psize;
-      } else {
-        rec_control.srow = 1; rec_control.erow = agile_data.length;
-      }
-      append_rows.call(this);
-      set_pagination();
-      $('.agile_top_tools').removeClass('loading');
-      settings.callback.call(this);
-    });//sorting         
-  }//enable_sort
-  function down_csv() {
+    this.agile_data = [],
+      //$('.agile_wrapper,.agile_wrapper *,.agile_down .excel,.agile_down .csv').off();
+      element.html("");
+  };
+  Plugin.prototype.downloadCSV = function (settings) {
     let hiddenElement = document.createElement('a');
-    hiddenElement.href = 'data:text/csv;charset=utf-8,' + ConvertToCSV(agile_data);
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + this.ConvertToCSV(this.agile_data, settings);
     hiddenElement.target = '_blank';
-    hiddenElement.download = settings.csv_file_name.replace('.csv', '') + '_' + format_date(new Date()) + '_' + new Date().getHours() + '_' + new Date().getMinutes() + '_' + new Date().getSeconds() + '.csv';
+    hiddenElement.download = settings.csv_file_name.replace('.csv', '') + '_' + this.FormatDate(new Date()) + '_' + new Date().getHours() + '_' + new Date().getMinutes() + '_' + new Date().getSeconds() + '.csv';
     hiddenElement.click();
-  }//down_csv
-  function json2excel() {
+  }//Download CSV function
+
+  Plugin.prototype.ConvertToCSV = function (objArray, settings) {
+    let _ = this;
+    let array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    let str = '';
+    let line = '';
+
+    for (let index in _.header_arr) {
+      if (line != '')
+        line += ','
+      line += _.header_arr[index];
+    }
+    str += line + '\r\n';
+    for (let i = 0; i < array.length; i++) {
+      line = '';
+      for (let index in array[i]) {
+        let data = array[i][index];
+        if (line != '')
+          line += ','
+        data = (JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? _.FormatDate(new Date(data), settings.dtformatcols[index]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + index + '"') > -1) ? _.FormatNumber(data, settings.numformatcols[index]) : data);
+        if (data.toString().indexOf(',') > -1)
+          data = '"' + data + '"';
+        line += data;
+      }
+      str += line + '\r\n';
+    }
+    return str;
+  }//ConvertToCSV 
+  Plugin.prototype.downloadEXCEL = function (settings) {
+    let _ = this;
     let list_data = {};
-    list_data.options = { fileName: settings.excel_file_name.replace('.xlsx', '') + '_' + format_date(new Date()) + '_' + new Date().getHours() + '_' + new Date().getMinutes() + '_' + new Date().getSeconds() };
+    list_data.options = {
+      fileName: settings.excel_file_name.replace('.xlsx', '') + '_' + _.FormatDate(new Date()) + '_' + new Date().getHours() + '_' + new Date().getMinutes() + '_' + new Date().getSeconds()
+    };
     list_data.tableData = [{ sheetName: settings.excel_file_name.replace('.xlsx', ''), data: [] }];
     let data = [], t = {}, fmt = {};
-    header_arr.forEach(function (val) {
+    _.header_arr.forEach(function (val) {
       data.push({
         'style': {
           "font": {
@@ -366,25 +505,20 @@
         },
         text: val
       });
-      (JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? fmt[val] = get_excel_fmt_nm_cd(settings.numformatcols[val]) : '';
+      (JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? fmt[val] = _.GetExcelFormatNumber(settings.numformatcols[val]) : '';
     });//header_arr forEach
 
     list_data.tableData[0].data.push(data);
 
-    agile_data.forEach(function (val) {
+    _.agile_data.forEach(function (val) {
       data = [];
-      header_arr.forEach(function (index, j) {
-        t = { 'style': { "alignment": { "horizontal": settings.halign[j] } }, "text": ((JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? format_date(new Date(val[index]), settings.dtformatcols[index]) : val[index]) };
+      _.header_arr.forEach(function (index, j) {
+        t = { 'style': { "alignment": { "horizontal": settings.halign[j] } }, "text": ((JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? _.FormatDate(new Date(val[index]), settings.dtformatcols[index]) : val[index]) };
         (JSON.stringify(settings.numformatcols).indexOf('"' + index + '"') > -1) ? t.format = fmt[index] : '';
         data.push(t);
       });
       list_data.tableData[0].data.push(data);
-    });//agile_data forEach       
-
-    /*
-    data = [{"merge":{"c":2,"r":2},'style': {"alignment":{"wrapText":true}},"text":"Disclaimer: These service leads are provided for your convenience using data sourced from your Dealer Management System.Your dealership is responsible to ensure that you "},{"text":""},{"text":""}]
-    list_data.tableData[0].data.push(data);  
-    *///merging
+    });
 
     if (settings.excel_parameter_tab) {
       list_data.tableData.push({ sheetName: "Parameters", data: [] });
@@ -398,30 +532,30 @@
         list_data.tableData[1].data.push(data);
       });
     }
-    Jhxlsx.export(list_data.tableData, list_data.options);
-  }//json2excel
-  function destroy() {
-    agile_data = [], tmp, settings, header_arr = [], html = "", rec_control = { "psize": 0, "srow": "", "erow": "", "curr_pos": "" }, Jhxlsx = "";
-    $('.agile_wrapper,.agile_wrapper *,.agile_down .excel,.agile_down .csv').off();
-    this.html("");
-  };
+    _.Jhxlsx.export(list_data.tableData, list_data.options);
+  }
+  Plugin.prototype.GetExcelFormatNumber = function (format) {
+    let fmt = "###,###,###,###,##0.", i;
+    if (format.decimals)
+      for (i = 0; i < format.decimals; i++)
+        fmt += '0';
+    fmt = fmt.replace(/\.$/, '');
+    if (format.number_prefix)
+      fmt = format.number_prefix + fmt;
+    if (format.number_suffix)
+      fmt = fmt + format.number_suffix;
+    return fmt;
+  }//format_number 
 
-  /**************Helper Functions******************/
-  function Workbook() {
-    if (!(this instanceof Workbook))
-      return new Workbook();
-    this.SheetNames = [];
-    this.Sheets = {};
-  }//Workbook    
-  function create_jhxlsx_obj() {
+  Plugin.prototype.ExportExcel = function () {
     /*
-    * ####################################################################################################
-    * https://www.npmjs.com/package/xlsx-style
-    * ####################################################################################################
-    */
+        * ####################################################################################################
+        * https://www.npmjs.com/package/xlsx-style
+        * ####################################################################################################
+        */
     if (typeof (XLSX) == "undefined" && typeof (require) != "undefined")
       var XLSX = require('xlsx');
-    Jhxlsx = {
+    this.Jhxlsx = {
       config: {
         fileName: "report",
         extension: ".xlsx",
@@ -557,6 +691,7 @@
           this.jhAddRow(this.worksheetObj.data[i]);
         }
         this.cellWidthValidate();
+        //console.log(this.merges);
         //this.worksheet['!merges'] = [{s: {r: 0, c: 0}, e: {r: 0, c: 4}},{s: {r: 5, c: 0}, e: {r: 6, c: 3}}];//this.merges;
         this.worksheet['!merges'] = this.merges;
         this.worksheet['!cols'] = this.wsColswidth;
@@ -591,79 +726,27 @@
         return blobData;
       },
       export: function (workbookObj, options) {
-        //rati if(typeof(saveAs)=="undefined" && typeof(require)!="undefined")
-        //rati var saveAs = require('saveAs');  
+        if (typeof (saveAs) == "undefined" && typeof (require) != "undefined")
+          var saveAs = require('saveAs');
         saveAs(this.getBlob(workbookObj, options), this.config.fileFullName);
       },
     }
-  }//create_jhxlsx_obj
-  function ConvertToCSV(objArray) {
-    let array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
-    let str = '';
-    let line = '';
-
-    for (var index in header_arr) {
-      if (line != '') line += ','
-      line += header_arr[index];
-    }
-    str += line + '\r\n';
-    for (var i = 0; i < array.length; i++) {
-      line = '';
-      for (var index in array[i]) {
-        let data = array[i][index];
-        if (line != '') line += ','
-        data = (JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? format_date(new Date(data), settings.dtformatcols[index]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + index + '"') > -1) ? format_number(data, settings.numformatcols[index]) : data);
-        if (data.toString().indexOf(',') > -1) data = '"' + data + '"';
-        line += data;
+  }
+  function Workbook() {
+    if (!(this instanceof Workbook))
+        return new Workbook();
+    this.SheetNames = [];
+    this.Sheets = {};
+  }//Workbook 
+  // A really lightweight plugin wrapper around the constructor, 
+  // preventing against multiple instantiations
+  $.fn[pluginName] = function (options) {
+    return this.each(function () {
+      if (!$.data(this, 'plugin_' + pluginName)) {
+        $.data(this, 'plugin_' + pluginName,
+          new Plugin(this, options));
       }
-
-      str += line + '\r\n';
-    }
-
-    return str;
-  }//ConvertToCSV  
-  function format_number(val, format) {
-    if (val) {
-      if (format.decimals) val = val.toFixed(format.decimals).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      if (format.number_prefix && Number(val.replace(/\,/g, '')) < 0) val = '<span class="negative">(' + format.number_prefix + val.replace(/\-/, '') + ')</span>';
-      else if (format.number_prefix) val = format.number_prefix + val;
-      else if (format.number_suffix && Number(val.replace(/\,/g, '')) < 0) val = '<span class="negative">(' + val.replace(/\-/, '') + format.number_suffix + ')</span>';
-      else if (format.number_suffix) val = val + format.number_suffix;
-    }
-    return val;
-  }//format_number
-  function get_excel_fmt_nm_cd(format) {
-    let fmt = "###,###,###,###,##0.", i;
-    if (format.decimals) for (i = 0; i < format.decimals; i++)fmt += '0';
-    fmt = fmt.replace(/\.$/, '');
-    if (format.number_prefix) fmt = format.number_prefix + fmt;
-    if (format.number_suffix) fmt = fmt + format.number_suffix;
-    return fmt;
-  }//format_number      
-  function format_date(dt, format) {
-    if (format == 'dd-mm-yyyy') return dt.getDate() + "-" + (dt.getMonth() + 1) + "-" + dt.getFullYear();
-    else if (format == 'dd/mm/yyyy') return dt.getDate() + "-" + (dt.getMonth() + 1) + "-" + dt.getFullYear();
-    else if (format == 'mm-dd-yyyy') return (dt.getMonth() + 1) + "-" + dt.getDate() + "-" + dt.getFullYear();
-    else if (format == 'mm/dd/yyyy') return (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
-    else if (format == 'dd/mon/yyyy') return dt.getDate() + "/" + mth[dt.getMonth()] + "/" + dt.getFullYear();
-    else if (format == 'dd-mon-yyyy') return dt.getDate() + "-" + mth[dt.getMonth()] + "-" + dt.getFullYear();
-    else if (format == 'dd mon yyyy') return dt.getDate() + " " + mth[dt.getMonth()] + " " + dt.getFullYear();
-    else if (format == 'dd month yyyy') return dt.getDate() + " " + fmth[dt.getMonth()] + " " + dt.getFullYear();
-    else if (format == 'month dd,yyyy') return fmth[dt.getMonth()] + " " + dt.getDate() + "," + dt.getFullYear();
-    else return mth[dt.getMonth()] + "_" + dt.getDate() + "_" + dt.getFullYear();
-  }//format_date      
-  function sort_by_key(array, key) {
-    return array.sort(function (a, b) {
-      var x = a[key]; var y = b[key];
-      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
     });
-  }//sort_by_key
-  function sort_by_key_desc(array, key) {
-    return array.sort(function (a, b) {
-      var x = a[key]; var y = b[key];
-      return ((x > y) ? -1 : ((x < y) ? 1 : 0));
-    });
-  }//sort_by_key      
-  /**************Helper Functions******************/
-}(jQuery));
-export default $.fn.agilereport;
+  }
+
+})(jQuery, window, document);
