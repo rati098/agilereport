@@ -549,6 +549,7 @@
   }//format_number 
 
   Plugin.prototype.ExportExcel = function () {
+    return false;
     /*
         * ####################################################################################################
         * https://www.npmjs.com/package/xlsx-style
