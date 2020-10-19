@@ -11,7 +11,7 @@
     this.options = $.extend({
       // These are the defaults.
       div_class: "",
-      halign: "",
+      halign: [],
       no_of_rows: 15,
       dtformatcols: {},
       csv_download: true,
@@ -51,7 +51,8 @@
       this.header_arr.push(i);
       this.p_halign.push('left');
     }
-    this._defaults.halign = this.p_halign;
+    if (this._defaults.halign.length == 0)
+      this._defaults.halign = this.p_halign;
     this.agile_data = this._defaults.data;
     this.controls.paginationSize = Number(this._defaults.no_of_rows);
     this.GenerateHeader(this._defaults, this.$element);
@@ -101,7 +102,10 @@
     if (settings.table_header)
       $('#' + element.attr('id') + '_wrapper').prepend(`<div class="theader">${settings.table_header}</div>`);
     _.header_arr.forEach(function (a, i) {
-      $('#' + element.attr('id') + '_report thead tr').append(`<th align="${settings.halign[i]}" data-key="${a}">${a}</th>`)
+      let _class = a.replace(/ /g, '_')  
+      //if (a[key].toString().charAt(a[key].toString().length - 1) == '%')
+
+      $('#' + element.attr('id') + '_report thead tr').append(`<th align="${settings.halign[i]}" class="header_th" id="${_class}" data-key="${a}">${a}</th>`)
     });
     if (settings.sorting)
       _.EnableSorting(settings, element);
@@ -148,21 +152,26 @@
   Plugin.prototype.AppendRows = function (settings, element) {
     // Place append rows related logic here
     let _ = this;
-    if (this.agile_data.length < this.controls.srow)
+    if (_.agile_data.length < _.controls.srow)
       return;
-    this.controls.erow = (this.agile_data.length < this.controls.erow) ? this.agile_data.length : this.controls.erow;
+    _.controls.erow = (_.agile_data.length < _.controls.erow) ? _.agile_data.length : _.controls.erow;
     //prepare tbody  
-    for (let j = (this.controls.srow - 1); j < this.controls.erow; j++) {
-      this.temp = this.agile_data[j];
-      this.html = "<tr>";
-      this.header_arr.forEach(function (val, i) {
-        _.html += `<td align="${settings.halign[i]}">
+    for (let j = (_.controls.srow - 1); j < _.controls.erow; j++) {
+      _.temp = _.agile_data[j];
+      _.html = "<tr>";
+      _.header_arr.forEach(function (val, i) {
+        let alignment = settings.halign[i];
+        if (_.temp[val].toString().charAt(0) == '$')
+          alignment = 'right'
+        if (_.temp[val].toString().charAt(_.temp[val].length - 1) == '%')
+          alignment = 'center'
+        _.html += `<td align="${alignment}">
         ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
       });//inner loop
-      this.html += "</tr>";
-      $('#' + element.attr('id') + '_report tbody').append(this.html);
+      _.html += "</tr>";
+      $('#' + element.attr('id') + '_report tbody').append(_.html);
     };//outer loop
-    this.controls.current_position = this.controls.erow;
+    _.controls.current_position = _.controls.erow;
 
   };//Append Rows END;
   Plugin.prototype.FormatNumber = function (value, format) {
@@ -233,13 +242,31 @@
   }//Enable Sorting END;
   Plugin.prototype.SortByKey = function (array, key) {
     return array.sort(function (a, b) {
-      var x = a[key]; var y = b[key];
+      var x = a[key];
+      var y = b[key];
+      if (a[key].toString().charAt(0) == '$')
+          x = Number(a[key].toString().replace(/\D/g,''))
+      if (b[key].toString().charAt(0) == '$')
+          y = Number(b[key].toString().replace(/\D/g,''))
+      if (a[key].toString().charAt(a[key].toString().length - 1) == '%')
+          x = Number(a[key].toString().replace(/\D/g,''))
+      if (b[key].toString().charAt(b[key].toString().length - 1) == '%')
+          y = Number(b[key].toString().replace(/\D/g,''))
       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
     });
   }//sort by key end;
   Plugin.prototype.SortByKeyDesc = function (array, key) {
     return array.sort(function (a, b) {
-      var x = a[key]; var y = b[key];
+      var x = a[key];
+      var y = b[key];
+      if (a[key].toString().charAt(0) == '$')
+          x = Number(a[key].toString().replace(/\D/g,''))
+      if (b[key].toString().charAt(0) == '$')
+          y = Number(b[key].toString().replace(/\D/g,''))
+      if (a[key].toString().charAt(a[key].toString().length - 1) == '%')
+          x = Number(a[key].toString().replace(/\D/g,''))
+      if (b[key].toString().charAt(b[key].toString().length - 1) == '%')
+          y = Number(b[key].toString().replace(/\D/g,''))
       return ((x > y) ? -1 : ((x < y) ? 1 : 0));
     });
   }//sort by key desc end; 
@@ -480,7 +507,7 @@
     }
     return str;
   }//ConvertToCSV 
- 
+
   // A really lightweight plugin wrapper around the constructor, 
   // preventing against multiple instantiations
   $.fn[pluginName] = function (options) {
