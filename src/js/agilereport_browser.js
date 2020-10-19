@@ -161,11 +161,12 @@
       _.html = "<tr>";
       _.header_arr.forEach(function (val, i) {
         let alignment = settings.halign[i];
+        let _class = val.replace(/ /g, '_')+'_td';
         if (_.temp[val].toString().charAt(0) == '$')
           alignment = 'right'
         if (_.temp[val].toString().charAt(_.temp[val].length - 1) == '%')
           alignment = 'center'
-        _.html += `<td align="${alignment}">
+        _.html += `<td class="${_class}" align="${alignment}">
         ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
       });//inner loop
       _.html += "</tr>";
