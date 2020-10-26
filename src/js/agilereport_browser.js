@@ -105,7 +105,7 @@
       let _class = a.replace(/ /g, '_')  
       //if (a[key].toString().charAt(a[key].toString().length - 1) == '%')
 
-      $('#' + element.attr('id') + '_report thead tr').append(`<th align="${settings.halign[i]}" class="header_th" id="${_class}" data-key="${a}">${a}</th>`)
+      $('#' + element.attr('id') + '_report thead tr').append(`<th style="text-align:${settings.halign[i]}" class="header_th" id="${_class}" data-key="${a}">${a}</th>`)
     });
     if (settings.sorting)
       _.EnableSorting(settings, element);
