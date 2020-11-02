@@ -44,7 +44,7 @@
     }
     this.p_halign = [];
     if (!options.data || options.data.length == 0) {
-      this.html("No Data Found !").addClass('agile_no_data');
+      this.$element.html("No Data Found !").addClass('agile_no_data');
       return;
     }
     for (let i in options.data[0]) {
@@ -514,7 +514,8 @@
   $.fn[pluginName] = function (options) {
     return this.each(function () {
       //if (!$.data(this, 'plugin_' + pluginName)) {
-        $.data(this, 'plugin_' + pluginName, new Plugin(this, options));
+        $.data(this, 'plugin_' + pluginName,
+          new Plugin(this, options));
       //}
     });
   }
