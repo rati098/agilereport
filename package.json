@@ -1,6 +1,6 @@
 {
   "name": "agilereport",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "convert json source to report with all type of functionalities like sorting,sorting,filteration,csv & excel export, pagination etc.",
   "main": "index.js",
   "scripts": {
