@@ -167,7 +167,7 @@
         if (_.temp[val].toString().charAt(_.temp[val].length - 1) == '%')
           alignment = 'center'
         _.html += `<td class="${_class}" align="${alignment}">
-        ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val],val) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
+        ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val],_.temp[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
       });//inner loop
       _.html += "</tr>";
       $('#' + element.attr('id') + '_report tbody').append(_.html);
