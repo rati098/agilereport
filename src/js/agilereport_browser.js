@@ -52,7 +52,7 @@
       this.p_halign.push('left');
     }
     if (this._defaults.halign.length == 0)
-      this._defaults.halign = this.p_halign;
+    this._defaults.halign = this.p_halign;
     this.agile_data = this._defaults.data;
     this.controls.paginationSize = Number(this._defaults.no_of_rows);
     this.GenerateHeader(this._defaults, this.$element);
