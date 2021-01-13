@@ -44,7 +44,7 @@
     }
     this.p_halign = [];
     if (!options.data || options.data.length == 0) {
-      this.$element.html("No Data Found !").addClass('agile_no_data');
+      $(element).html("No Data !").addClass('agile_no_data');
       return;
     }
     for (let i in options.data[0]) {

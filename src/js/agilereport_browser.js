@@ -23,6 +23,7 @@
       numformatcols: {},
       sorting: true,
       report_type: "lazy_load",
+      nodatafound:'No Data Found.',
       callback: function (data) {
       }
     }, options);
@@ -44,7 +45,7 @@
     }
     this.p_halign = [];
     if (!options.data || options.data.length == 0) {
-      this.$element.html("No Data Found !").addClass('agile_no_data');
+      $(element).html("No Data !").addClass('agile_no_data');
       return;
     }
     for (let i in options.data[0]) {
