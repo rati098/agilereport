@@ -53,7 +53,7 @@
       this.p_halign.push('left');
     }
     if (this._defaults.halign.length == 0)
-      this._defaults.halign = this.p_halign;
+    this._defaults.halign = this.p_halign;
     this.agile_data = this._defaults.data;
     this.controls.paginationSize = Number(this._defaults.no_of_rows);
     this.GenerateHeader(this._defaults, this.$element);
@@ -168,7 +168,7 @@
         if (_.temp[val].toString().charAt(_.temp[val].length - 1) == '%')
           alignment = 'center'
         _.html += `<td class="${_class}" align="${alignment}">
-        ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
+        ${(JSON.stringify(settings.dtformatcols).indexOf('"' + val + '"') > -1) ? _.FormatDate(new Date(_.temp[val]), settings.dtformatcols[val],_.temp[val]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + val + '"') > -1) ? _.FormatNumber(_.temp[val], settings.numformatcols[val]) : _.temp[val])}</td>`;
       });//inner loop
       _.html += "</tr>";
       $('#' + element.attr('id') + '_report tbody').append(_.html);
@@ -191,7 +191,9 @@
     }
     return value;
   }//Format Number END;
-  Plugin.prototype.FormatDate = function (date, format) {
+  Plugin.prototype.FormatDate = function (date, format, val) {
+    if(format && !val)
+    return '';    
     if (format == 'dd-mm-yyyy')
       return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
     else if (format == 'dd/mm/yyyy')
@@ -500,7 +502,7 @@
         let data = array[i][index];
         if (line != '')
           line += ','
-        data = (JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? _.FormatDate(new Date(data), settings.dtformatcols[index]) : ((JSON.stringify(settings.numformatcols).indexOf('"' + index + '"') > -1) ? _.FormatNumber(data, settings.numformatcols[index]) : data);
+        data = (JSON.stringify(settings.dtformatcols).indexOf('"' + index + '"') > -1) ? _.FormatDate(new Date(data), settings.dtformatcols[index],data) : ((JSON.stringify(settings.numformatcols).indexOf('"' + index + '"') > -1) ? _.FormatNumber(data, settings.numformatcols[index]) : data);
         if (data.toString().indexOf(',') > -1)
           data = '"' + data + '"';
         line += data;
