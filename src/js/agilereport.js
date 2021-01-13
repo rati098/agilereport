@@ -44,7 +44,7 @@
     }
     this.p_halign = [];
     if (!options.data || options.data.length == 0) {
-      $(element).html("No Data !").addClass('agile_no_data');
+      $(element).html(this._defaults.nodatafound).addClass('agile_no_data');
       return;
     }
     for (let i in options.data[0]) {
@@ -398,6 +398,11 @@
       }
       settings.callback(_);
     });
+    if(_.controls.paginationSize >= _.agile_data.length){
+      $('#' + element.attr('id') + '_pagination').hide();
+    }else{
+      $('#' + element.attr('id') + '_pagination').show();
+    }
   }//Set Pagination END;
   Plugin.prototype.FilterReport = function (settings, element) {
     let _ = this;
