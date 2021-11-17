@@ -1,4 +1,3 @@
-# agilereport
 # About
 This is the lightweight jquery plugin in which you can pass data in json format and it will render the html report with features of pagination/lazyload, column sorting, number/date formatting, in-report record filter,data export and many more customizations.
 Please go through this document thoroughly to get used to it.
