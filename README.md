@@ -5,7 +5,7 @@ Please go through this document thoroughly to get used to it.
 # Usage
   **Step 1** - Please include agilereport.min.js in your script header.
   
-  **Step 2** - have one empty html div element in the DOM. ex- <div id="report_container"></div>
+  **Step 2** - have one empty html div element in the DOM. ex- ```<div id="report_container"></div> ```
   
   **Step 3** - Call jquery function json2agilereport on the selected element.
   
