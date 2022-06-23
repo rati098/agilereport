@@ -23,7 +23,7 @@
     "gulp-sass": "^4.1.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.1",
-    "jsdom": "^15.1.1",
+    "jsdom": "^16.5.0",
     "mocha": "^6.1.4",
     "mocha-jsdom": "^2.0.0",
     "uglify": "^0.1.5"
